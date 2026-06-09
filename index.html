@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Escape Mathrooms</title>
+<style>
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0d0b00;
+  --surface:      #161200;
+  --border:       rgba(200,168,60,0.25);
+  --yellow:       #c8a83c;
+  --yellow-glow:  #e8d060;
+  --green:        #39ff14;
+  --red:          #ff2233;
+  --blue:         #00cfff;
+  --text:         #ede0a8;
+  --text2:        #8a7840;
+  --text3:        #4a4020;
+}
+
+html, body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.7;
+  animation: grain 0.6s steps(2) infinite;
+}
+@keyframes grain {
+  0%   { background-position: 0 0; }
+  50%  { background-position: -30px 20px; }
+  100% { background-position: 20px -10px; }
+}
+
+/* ── TELAS ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 2rem 1.25rem 4rem;
+  animation: fadein 0.4s ease;
+}
+.screen.active { display: flex; }
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOME ── */
+#home {
+  justify-content: center;
+  gap: 1.8rem;
+  text-align: center;
+}
+
+.logo {
+  line-height: 1.1;
+}
+.logo h1 {
+  font-size: clamp(2.4rem, 10vw, 4rem);
+  color: var(--yellow-glow);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px var(--yellow),
+    0 0 40px rgba(200,168,60,0.3);
+  animation: logoflick 6s ease infinite;
+}
+@keyframes logoflick {
+  0%,88%,100% { opacity:1; }
+  89%  { opacity:0.5; }
+  90%  { opacity:1; }
+  91%  { opacity:0.2; }
+  92%  { opacity:1; }
+}
+.logo p {
+  font-size: 0.8rem;
+  color: var(--text2);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-top: 0.4rem;
+}
+
+.home-desc {
+  max-width: 340px;
+  font-size: 0.9rem;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* Dificuldades */
+.diff-select {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 340px;
+}
+.diff-btn {
+  flex: 1;
+  padding: 0.6rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background: rgba(200,168,60,0.03);
+  border: 1px solid var(--text3);
+  color: var(--text2);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.diff-btn.sel[data-diff="easy"] { border-color: var(--green); color: var(--green); background: rgba(57,255,20,0.05); }
+.diff-btn.sel[data-diff="medium"] { border-color: var(--yellow); color: var(--yellow-glow); background: rgba(200,168,60,0.1); }
+.diff-btn.sel[data-diff="hard"] { border-color: var(--red); color: var(--red); background: rgba(255,34,51,0.05); }
+
+/* ── BOTÕES ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  min-height: 54px;
+  min-width: 220px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn:hover::after { opacity: 1; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: rgba(200,168,60,0.15);
+  border-color: var(--yellow);
+  color: var(--yellow-glow);
+  text-shadow: 0 0 8px rgba(200,168,60,0.5);
+}
+.btn-primary:hover {
+  background: rgba(200,168,60,0.28);
+  box-shadow: 0 0 20px rgba(200,168,60,0.35), 0 0 50px rgba(200,168,60,0.1);
+  transform: translateY(-2px);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--text3);
+  color: var(--text2);
+}
+.btn-ghost:hover {
+  border-color: var(--text2);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+.btn-danger {
+  background: transparent;
+  border-color: var(--red);
+  color: var(--red);
+}
+.btn-danger:hover {
+  background: rgba(255,34,51,0.12
