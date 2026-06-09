@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Backrooms Quiz</title>
+<style>
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0d0b00;
+  --surface:      #161200;
+  --border:       rgba(200,168,60,0.25);
+  --yellow:       #c8a83c;
+  --yellow-glow:  #e8d060;
+  --green:        #39ff14;
+  --red:          #ff2233;
+  --blue:         #00cfff;
+  --text:         #ede0a8;
+  --text2:        #8a7840;
+  --text3:        #4a4020;
+}
+
+html, body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.7;
+  animation: grain 0.6s steps(2) infinite;
+}
+@keyframes grain {
+  0%   { background-position: 0 0; }
+  50%  { background-position: -30px 20px; }
+  100% { background-position: 20px -10px; }
+}
+
+/* ── TELAS ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 2rem 1.25rem 4rem;
+  animation: fadein 0.4s ease;
+}
+.screen.active { display: flex; }
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── HOME ── */
+#home {
+  justify-content: center;
+  gap: 1.4rem;
+  text-align: center;
+}
+
+.logo {
+  line-height: 1.1;
+}
+.logo h1 {
+  font-size: clamp(2.4rem, 10vw, 4rem);
+  color: var(--yellow-glow);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px var(--yellow),
+    0 0 40px rgba(200,168,60,0.3);
+  animation: logoflick 6s ease infinite;
+}
+@keyframes logoflick {
+  0%,88%,100% { opacity:1; }
+  89%  { opacity:0.5; }
+  90%  { opacity:1; }
+  91%  { opacity:0.2; }
+  92%  { opacity:1; }
+}
+.logo p {
+  font-size: 0.8rem;
+  color: var(--text2);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-top: 0.4rem;
+}
+
+.home-desc {
+  max-width: 340px;
+  font-size: 0.9rem;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* Seletor de Dificuldade Otimizado */
+.diff-selection {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.diff-btn {
+  background: rgba(200,168,60,0.05);
+  border: 1px solid var(--text3);
+  color: var(--text2);
+  padding: 0.5rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.diff-btn:hover {
+  border-color: var(--text2);
+  color: var(--text);
+}
+.diff-btn.sel {
+  border-color: var(--yellow);
+  color: var(--yellow-glow);
+  background: rgba(200,168,60,0.15);
+  box-shadow: 0 0 8px rgba(200,168,60,0.3);
+}
+
+/* ── BOTÕES ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  min-height: 54px;
+  min-width: 220px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn:hover::after { opacity: 1; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: rgba(200,168,60,0.15);
+  border-color: var(--yellow);
+  color: var(--yellow-glow);
+  text-shadow: 0 0 8px rgba(200,168,60,0.5);
+}
+.btn-primary:hover {
+  background: rgba(200,168,60,0.28);
+  box-shadow: 0 0 20px rgba(200,168,60,0.35), 0 0 50px rgba(200,168,60,0.1);
+  transform: translateY(-2px);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--text3);
+  color: var(--text2);
+}
+.btn-ghost:hover {
+  border-color: var(--text2);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+.btn-danger {
+  background: transparent;
+  border-color: var(--red);
+  color: var(--red);
+}
+.btn-danger:hover {
+  background: rgba(255,34,51,0.12);
+  box-shadow: 0 0 16px rgba(255,34,51,0.25);
+}
+
+/* ── HUD ── */
+#hud {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10,8,0,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+  padding: 0.6rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+#hud.show { display: flex; }
+
+.hud-item { display: flex; flex-direction: column; align-items: center; }
+.hud-label { font-size: 0.65rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+.hud-val {
+  font-size: 1.1rem; font-weight: bold;
+  color: var(--yellow-glow);
+  text-shadow: 0 0 6px rgba(200,168,60,0.4);
+  transition: color 0.2s;
+}
+.hud-val.crit { color: var(--red) !important; animation: blink 0.5s infinite alternate; }
+@keyframes blink { from{opacity:1} to{opacity:0.3} }
+
+/* Barra de progresso */
+#topbar {
+  position: fixed; top: 0; left: 0;
+  height: 3px; width: 0%;
+  background: linear-gradient(90deg, var(--yellow), var(--green));
+  box-shadow: 0 0 8px var(--yellow-glow);
+  transition: width 0.4s ease;
+  z-index: 101;
+}
+
+/* ── TELA DE JOGO ── */
+#game {
+  padding-top: 5.5rem;
+  gap: 1rem;
+  align-items: center;
+}
+
+.room-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.72rem;
+  color: var(--text2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.room-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 5px var(--yellow);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Pips */
+.pips {
+  display: flex; gap: 4px;
+  width: 100%; max-width: 540px;
+}
+.pip {
+  flex: 1; height: 4px; border-radius: 2px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.pip.ok   { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.pip.bad  { background: var(--red); }
+.pip.cur  { background: var(--yellow-glow); animation: pulse 1s infinite; }
+
+/* Pergunta */
+.q-panel {
+  width: 100%; max-width: 540px;
+  background: rgba(22,18,0,0.8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1.1rem;
+  backdrop-filter: blur(4px);
+}
+.q-num {
+  font-size: 0.7rem; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+}
+.q-text {
+  font-size: 1.05rem; line-height: 1.55;
+  color: var(--text);
+}
+
+/* Alternativas */
+.options {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  width: 100%; max-width: 540px;
+}
+.opt {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  min-height: 54px;
+  background: rgba(200,168,60,0.05);
+  border: 1px solid rgba(200,168,60,0.2);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  font-size: 0.97rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.opt::before {
+  content: ''; position: absolute; left:0; top:0; bottom:0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(200,168,60,0.15), transparent);
+  transition: width 0.2s;
+}
+.opt:hover::before { width: 100%; }
+.opt:hover {
+  border-color: var(--yellow);
+  transform: translateX(4px);
+  box-shadow: 0 0 12px rgba(200,168,60,0.15);
+}
+.opt:disabled { cursor: not-allowed; transform: none; }
+.opt-letter {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; min-width: 26px;
+  border: 1px solid var(--text3);
+  border-radius: 4px;
+  font-size: 0.72rem; font-weight: bold;
+  color: var(--text2);
+  transition: all 0.15s;
+  margin-top: 1px;
+}
+.opt:hover .opt-letter { border-color: var(--yellow); color: var(--yellow-glow); }
+
+.opt.correct {
+  background: rgba(57,255,20,0.1);
+  border-color: var(--green);
+  box-shadow: 0 0 14px rgba(57,255,20,0.15);
+  animation: correctpop 0.35s ease;
+}
+.opt.correct .opt-letter { background: var(--green); border-color: var(--green); color: #000; }
+.opt.wrong {
+  background: rgba(255,34,51,0.1);
+  border-color: var(--red);
+  animation: shake 0.35s ease;
+}
+.opt.wrong .opt-letter { background: var(--red); border-color: var(--red); color: #fff; }
+
+@keyframes correctpop {
+  0%{transform:scale(1)} 40%{transform:scale(1.02) translateX(4px)} 100%{transform:scale(1) translateX(4px)}
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+}
+
+/* Feedback */
+.feedback {
+  display: none;
+  align-items: center; gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem; font-weight: bold;
+  width: 100%; max-width: 540px;
+  animation: fadein 0.25s ease;
+}
+.feedback.show { display: flex; }
+.feedback.ok  { background: rgba(57,255,20,0.1);  border: 1px solid var(--green); color: var(--green); }
+.feedback.err { background: rgba(255,34,51,0.1);  border: 1px solid var(--red);   color: var(--red); }
+
+/* Timer ring */
+.ring-wrap { position: relative; width: 52px; height: 52px; }
+.ring { transform: rotate(-90deg); width: 52px; height: 52px; }
+.ring-bg { fill:none; stroke: rgba(200,168,60,0.15); stroke-width:4; }
+.ring-fill {
+  fill:none; stroke: var(--yellow); stroke-width:4; stroke-linecap:round;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s;
+  stroke-dasharray: 138.2; stroke-dashoffset:0;
+  filter: drop-shadow(0 0 3px var(--yellow));
+}
+.ring-fill.crit { stroke: var(--red); filter: drop-shadow(0 0 3px var(--red)); }
+.ring-text {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.8rem; font-weight:bold; color: var(--yellow-glow);
+}
+
+/* ── RESULTADO ── */
+#result {
+  justify-content: center;
+  gap: 1.4rem;
+  text-align: center;
+}
+.res-emoji { font-size: 3.8rem; animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes pop { from{opacity:0;transform:scale(0.2)} to{opacity:1;transform:scale(1)} }
+.res-title { font-size: 1.7rem; color: var(--yellow-glow); text-shadow: 0 0 12px rgba(200,168,60,0.4); }
+.res-sub   { font-size: 0.88rem; color: var(--text2); margin-top: 0.2rem; }
+
+.stats {
+  display: grid; grid-template-columns: repeat(2,1fr);
+  gap: 0.7rem; width: 100%; max-width: 360px;
+}
+.stat {
+  background: rgba(200,168,60,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem;
+  transition: border-color 0.2s;
+}
+.stat:hover { border-color: var(--yellow); }
+.stat-val { display:block; font-size: 1.5rem; font-weight:bold; color: var(--yellow-glow); text-shadow: 0 0 6px rgba(200,168,60,0.3); }
+.stat-label { display:block; font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; margin-top:0.15rem; }
+
+.record-badge {
+  display: none;
+  align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1.2rem;
+  background: rgba(200,168,60,0.12);
+  border: 1px solid var(--yellow);
+  border-radius: 100px;
+  font-size: 0.85rem; font-weight: bold; color: var(--yellow-glow);
+  animation: glow 1.5s ease infinite alternate;
+}
+.record-badge.show { display: flex; }
+@keyframes glow {
+  from { box-shadow: 0 0 8px rgba(200,168,60,0.2); }
+  to   { box-shadow: 0 0 22px rgba(200,168,60,0.5); }
+}
+
+.res-actions { display:flex; flex-direction:column; gap:0.6rem; align-items:center; width:100%; max-width:280px; }
+
+/* ── HALL DA FAMA ── */
+#hall { gap: 1.4rem; }
+.screen-title { font-size: 1.5rem; color: var(--yellow-glow); text-transform: uppercase; letter-spacing: 0.08em; text-align:center; }
+.screen-sub   { font-size: 0.82rem; color: var(--text2); text-align:center; margin-top:0.2rem; }
+
+.hall-wrap {
+  width: 100%; max-width: 520px;
+  background: rgba(22,18,0,0.8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+th { text-align:left; padding:0.55rem 0.75rem; font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid var(--border); }
+td { padding:0.65rem 0.75rem; border-bottom:1px solid rgba(200,168,60,0.07); }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(200,168,60,0.04); }
+.rank      { font-weight:bold; color:var(--yellow); }
+.rank.gold { color:#ffd700; text-shadow:0 0 6px rgba(255,215,0,0.4); }
+.rank.silver { color:#c0c0c0; }
+.rank.bronze { color:#cd7f32; }
+.score-td  { font-weight:bold; color:var(--yellow-glow); }
+.hall-empty { text-align:center; padding:2.5rem 1rem; color:var(--text3); font-size:0.85rem; }
+.hall-actions { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; }
+
+/* ── MODAL ── */
+.overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,0.82); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center; padding:1.5rem;
+}
+.overlay.open { display:flex; animation:fadein 0.2s ease; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:10px; padding:1.75rem 1.5rem;
+  max-width:360px; width:100%; text-align:center;
+  box-shadow: 0 0 30px rgba(200,168,60,0.1);
+  animation: pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal h3 { font-size:1.2rem; color:var(--yellow-glow); margin-bottom:0.6rem; }
+.modal p  { font-size:0.88rem; color:var(--text2); line-height:1.6; margin-bottom:1.25rem; }
+.modal-btns { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; }
+
+/* ── TOASTS ── */
+#toasts {
+  position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%);
+  z-index:300; display:flex; flex-direction:column; gap:0.45rem;
+  align-items:center; pointer-events:none; width:min(90vw,380px);
+}
+.toast {
+  padding:0.65rem 1.1rem; border-radius:6px;
+  font-size:0.88rem; font-weight:bold; text-align:center;
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text); width:100%;
+  animation:fadein 0.25s ease;
+  box-shadow: 0 0 16px rgba(200,168,60,0.1);
+}
+.toast.out { animation:fadeout 0.25s ease forwards; }
+.toast.ok  { border-color:var(--green); color:var(--green); }
+.toast.err { border-color:var(--red);   color:var(--red); }
+.toast.inf { border-color:var(--blue);  color:var(--blue); }
+@keyframes fadeout { to{opacity:0;transform:translateY(-8px)} }
+
+/* ── SOM ── */
+#soundBtn {
+  position:fixed; bottom:1rem; right:1rem; z-index:150;
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(10,8,0,0.9); border:1px solid var(--border);
+  font-size:1.2rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+#soundBtn:hover { border-color:var(--yellow); box-shadow:0 0 12px rgba(200,168,60,0.2); }
+
+/* ── RESPONSIVE ── */
+@media(min-width:480px) {
+  .stats { grid-template-columns:repeat(4,1fr); max-width:540px; }
+  .q-text { font-size:1.1rem; }
+}
+@media(min-width:768px) {
+  #game { padding-top:6rem; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar"></div>
+
+<header id="hud">
+  <div class="hud-item">
+    <span class="hud-label">Pontos</span>
+    <span class="hud-val" id="hScore">0</span>
+  </div>
+
+  <div class="ring-wrap">
+    <svg class="ring" viewBox="0 0 52 52">
+      <circle class="ring-bg"   cx="26" cy="26" r="22"/>
+      <circle class="ring-fill" id="ringFill" cx="26" cy="26" r="22"
+        style="stroke-dasharray:138.2;stroke-dashoffset:0;"/>
+    </svg>
+    <div class="ring-text" id="ringText">∞</div>
+  </div>
+
+  <div class="hud-item">
+    <span class="hud-label">Questão</span>
+    <span class="hud-val" id="hQ">1/10</span>
+  </div>
+
+  <div class="hud-item">
+    <span class="hud-label">Streak</span>
+    <span class="hud-val" id="hStreak">0</span>
+  </div>
+</header>
+
+<button id="soundBtn" title="Som">🔊</button>
+
+<main>
+
+  <section class="screen active" id="home">
+    <div class="logo">
+      <h1>BACKROOMS<br>QUIZ</h1>
+      <p>Escape se puder</p>
+    </div>
+    <p class="home-desc">
+      Você deu no-clip e caiu nos corredores infinitos.
+      Responda as perguntas e tente encontrar a saída…
+      se é que ela existe.
+    </p>
+    
+    <div class="diff-selection">
+      <button class="diff-btn" data-diff="easy">🟢 Fácil</button>
+      <button class="diff-btn sel" data-diff="medium">🟡 Médio</button>
+      <button class="diff-btn" data-diff="hard">🔴 Difícil</button>
+    </div>
+
+    <button class="btn btn-primary" id="btnStart">⚡ Entrar nas Backrooms</button>
+    <button class="btn btn-ghost"   id="btnHall"  style="margin-top:0.5rem">🏆 Hall da Fama</button>
+  </section>
+
+  <section class="screen" id="game">
+    <div class="room-badge" id="roomBadge">
+      <span class="room-dot"></span>
+      <span id="roomName">Nível 0</span>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div class="q-panel">
+      <p class="q-num"  id="qNum">Pergunta 1 de 10</p>
+      <p class="q-text" id="qText">Carregando…</p>
+    </div>
+    <div class="options" id="opts"></div>
+    <div class="feedback" id="fb"></div>
+  </section>
+
+  <section class="screen" id="result">
+    <div class="res-emoji"  id="resEmoji">🏆</div>
+    <div>
+      <div class="res-title" id="resTitle">Você Escapou!</div>
+      <div class="res-sub"   id="resSub">Parabéns.</div>
+    </div>
+    <div class="record-badge" id="recBadge">⭐ Novo recorde!</div>
+    <div class="stats">
+      <div class="stat"><span class="stat-val" id="sScore">0</span><span class="stat-label">Pontos</span></div>
+      <div class="stat"><span class="stat-val" id="sAcertos">0/10</span><span class="stat-label">Acertos</span></div>
+      <div class="stat"><span class="stat-val" id="sTime">00:00</span><span class="stat-label">Tempo</span></div>
+      <div class="stat"><span class="stat-val" id="sDiff">—</span><span class="stat-label">Dificuldade</span></div>
+    </div>
+    <div class="res-actions">
+      <button class="btn btn-primary" id="btnAgain">⚡ Jogar Novamente</button>
+      <button class="btn btn-ghost"   id="btnResHall">🏆 Hall da Fama</button>
+      <button class="btn btn-ghost"   id="btnResHome">🏠 Menu</button>
+    </div>
+  </section>
+
+  <section class="screen" id="hall">
+    <div>
+      <div class="screen-title">🏆 Hall da Fama</div>
+      <div class="screen-sub">Os maiores sobreviventes das Backrooms</div>
+    </div>
+    <div class="hall-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Pontos</th><th>Acertos</th><th>Dif.</th><th>Tempo</th><th>Data</th>
+          </tr>
+        </thead>
+        <tbody id="hallBody"></tbody>
+      </table>
+      <div class="hall-empty" id="hallEmpty" style="display:none">
+        Nenhuma partida ainda.<br>Seja o primeiro a escapar!
+      </div>
+    </div>
+    <div class="hall-actions">
+      <button class="btn btn-ghost"  id="btnHallBack">← Voltar</button>
+      <button class="btn btn-danger" id="btnClear">🗑️ Limpar</button>
+    </div>
+  </section>
+
+</main>
+
+<div class="overlay" id="modalClear">
+  <div class="modal">
+    <h3>⚠️ Limpar Hall?</h3>
+    <p>Todos os recordes serão apagados permanentemente.</p>
+    <div class="modal-btns">
+      <button class="btn btn-danger" id="btnConfirm">Confirmar</button>
+      <button class="btn btn-ghost"  id="btnCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+const CFG = {
+  TOTAL: 10,
+  LS_KEY: 'bq_v3',
+  MAX_HALL: 10,
+  DIFFS: {
+    easy:   { label:'Fácil',   time:0,  icon:'🟢' },
+    medium: { label:'Médio',   time:60, icon:'🟡' },
+    hard:   { label:'Difícil', time:30, icon:'🔴' },
+  },
+};
+
+const ROOMS = [
+  {
+    id:'nivel0', name:'Nível 0 — Corredores Amarelos', icon:'🟨', amb:'hum',
+    qs:[
+      { t:'O que caracteriza o Nível 0 das Backrooms?', o:['Corredores amarelos com tapete úmido e zumbido fluorescente','Piscinas infinitas de água azul','Biblioteca com livros ilegíveis','Ruas desertas ao amanhecer'], a:0, e:'O Nível 0 tem paredes amarelas desbotadas, tapete molhado e o eterno zumbido das lâmpadas.' },
+      { t:'Qual a extensão estimada do Nível 0?', o:['Cerca de 10 km²','Aproximadamente 600 milhões de km²','Exatamente 1.000 salas','Infinita e impossível de medir'], a:1, e:'A Wiki das Backrooms estima ~600 milhões de km² — maior que vários planetas.' },
+      { t:'O que significa "no-clip" nas Backrooms?', o:['Técnica de corrida para fugir de entidades','Atravessar a geometria da realidade e cair nas Backrooms','Remover o áudio ambiente','Um tipo de criatura do Nível 2'], a:1, e:'"No-clipping" é atravessar a geometria da realidade, como bugs em videogames.' },
+      { t:'Qual bebida é famosa no Nível 0?', o:['Água com gás','Almond Water (Água de Amêndoa)','Suco de laranja','Café preto'], a:1, e:'A Almond Water restaura saúde e sanidade — sua origem é desconhecida.' },
+      { t:'Qual entidade habita as sombras do Nível 0?', o:['Smilers — dentes brilhando nas trevas','Cachorros fantasmas','Ondas de calor','Desabamentos de teto'], a:0, e:'Os Smilers se revelam apenas por seus dentes luminosos nas sombras.' },
+    ],
+  },
+  {
+    id:'poolrooms', name:'Poolrooms — Piscinas Eternas', icon:'🏊', amb:'water',
+    qs:[
+      { t:'O que caracteriza as Poolrooms (Nível 37)?', o:['Piscinas rasas infinitas com azulejos brancos e luz suave','Piscinas de ácido verde fluorescente','Lagos subterrâneos de água negra','Fontes em shoppings abandonados'], a:0, e:'As Poolrooms têm piscinas rasas, azulejos brancos e uma luz onírica e tranquila.' },
+      { t:'Qual sensação as Poolrooms evocam?', o:['Terror intenso e desorientação','Nostalgia melancólica e paz inquietante','Fome e exaustão extremas','Euforia e hiperatividade'], a:1, e:'São "liminal spaces" — espaços de transição belos e nostálgicos que causam desconforto sutil.' },
+      { t:'Qual o perigo das Poolrooms?', o:['Afogamento nas piscinas','Criaturas aquáticas nas piscinas aparentemente rasas','Correntes elétricas na água','Não há perigos'], a:1, e:'Apesar da aparência pacífica, criaturas podem estar nas piscinas cuja profundidade real é incerta.' },
+      { t:'O que é um "Liminal Space"?', o:['Um espaço de transição — familiar, mas vazio e fora de contexto','Uma sala com dois portais','Qualquer nível com 1.000+ salas','Espaço onde o tempo passa devagar'], a:0, e:'"Liminal" vem do latim "limen" (limiar) — locais de transição que causam nostalgia e estranheza.' },
+      { t:'De onde vieram as Poolrooms?', o:['Uma foto viral de piscina de hotel abandonada com luz suave','Uma cena de "The Shining"','Um render 3D de piscina infinita','Um parque aquático dos anos 80'], a:0, e:'Fotos liminares de piscinas — espaços familiares mas desertos — inspiraram o nível.' },
+    ],
+  },
+  {
+    id:'library', name:'Nível 5 — A Grande Biblioteca', icon:'📚', amb:'library',
+    qs:[
+      { t:'O que contém os livros do Nível 5?', o:['Textos em línguas impossíveis que mudam ao ser lidos','Apenas páginas em branco','Registros históricos reais','Manuais de sobrevivência de viajantes'], a:0, e:'Os livros têm idiomas não identificáveis que parecem mudar a cada leitura.' },
+      { t:'Quem habita a Biblioteca?', o:['The Archivist — catalogador dos visitantes','Bibliotecário sem rosto','Não há entidades','Facelings que catalogam livros em rotina'], a:3, e:'Facelings são humanos sem rosto que ignoram os visitantes e seguem suas rotinas.' },
+      { t:'Qual é a aparência do Nível 5?', o:['Prateleiras de metal enferrujado em porão inundado','Estantes de madeira escura até o teto com abajures verdes','Estantes de plástico branco sob LED','Cavernas com livros em rocha'], a:1, e:'Estética vitoriana: madeira escura, abajures verdes, corredores intermináveis.' },
+      { t:'Como se entra na Biblioteca?', o:['Apenas pelo Nível 0','Tocando um livro específico','Geralmente pelo Nível 4 ou portais aleatórios','Apenas à meia-noite'], a:2, e:'O acesso mais documentado é a partir do Nível 4 (Escritórios) ou portais esporádicos.' },
+      { t:'O que acontece com quem fica muito tempo na Biblioteca?', o:['É absorvido e vira livro','Perde a noção do tempo e ouve alucinações','Aprende a ler os textos impossíveis','É teleportado ao Nível 0'], a:1, e:'Dissociação temporal — os visitantes perdem completamente a noção de horas ou dias.' },
+    ],
+  },
+];
+
+let audioCtx = null, masterGain = null, ambNode = null, soundOn = true;
+
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.45;
+    masterGain.connect(audioCtx.destination);
+  } catch(e) { console.warn('Audio unavailable'); }
+}
+
+function stopAmb() {
+  if (!ambNode || !audioCtx) return;
+  const { g, o1, o2, ns } = ambNode;
+  const t = audioCtx.currentTime;
+  try {
+    g.gain.linearRampToValueAtTime(0, t + 0.7);
+    setTimeout(() => { try{ o1?.stop(); o2?.stop(); ns?.stop(); }catch{} }, 800);
+  } catch(e){}
+  ambNode = null;
+}
+
+function playAmb(type) {
+  if (!soundOn || !audioCtx) return;
+  stopAmb();
+  const g = audioCtx.createGain();
+  g.gain.value = 0;
+  g.connect(masterGain);
+
+  let o1, o2, ns;
+  if (type === 'water') {
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate*3, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    ns = audioCtx.createBufferSource(); ns.buffer=buf; ns.loop=true;
+    const f = audioCtx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=380; f.Q.value=0.6;
+    ns.connect(f); f.connect(g); ns.start();
+  } else if (type === 'library') {
+    o1 = audioCtx.createOscillator(); o1.type='sine'; o1.frequency.value=38;
+    const g1 = audioCtx.createGain(); g1.gain.value=0.025; o1.connect(g1); g1.connect(g); o1.start();
+    o2 = audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value=76;
+    const g2 = audioCtx.createGain(); g2.gain.value=0.012; o2.connect(g2); g2.connect(g); o2.start();
+  } else {
+    o1 = audioCtx.createOscillator(); o1.type='sawtooth'; o1.frequency.value=60;
+    const g1 = audioCtx.createGain(); g1.gain.value=0.035; o1.connect(g1); g1.connect(g); o1.start();
+    o2 = audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value=120;
+    const g2 = audioCtx.createGain(); g2.gain.value=0.018; o2.connect(g2); g2.connect(g); o2.start();
+  }
+  g.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime+1.2);
+  ambNode = { g, o1, o2, ns };
+}
+
+function sfx(type) {
+  if (!soundOn || !audioCtx) return;
+  if (type==='click') {
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='square'; o.frequency.setValueAtTime(880,audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(440,audioCtx.currentTime+0.07);
+    g.gain.setValueAtTime(0.1,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.09);
+    o.connect(g); g.connect(masterGain); o.start(); o.stop(audioCtx.currentTime+0.1);
+  } else if (type==='ok') {
+    [440,550,660].forEach((f,i)=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain(), t=audioCtx.currentTime+i*0.1;
+      o.type='sine'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.14,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t+0.25);
+    });
+  } else if (type==='err') {
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='sawtooth'; o.frequency.setValueAtTime(200,audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(80,audioCtx.currentTime+0.28);
+    g.gain.setValueAtTime(0.15,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.32);
+    o.connect(g); g.connect(masterGain); o.start(); o.stop(audioCtx.currentTime+0.35);
+  } else if (type==='win') {
+    [523,659,784,1047].forEach((f,i)=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain(), t=audioCtx.currentTime+i*0.16;
+      o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.32);
+      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t+0.35);
+    });
+  } else if (type==='lose') {
+    [380,280,180,100].forEach((f,i)=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain(), t=audioCtx.currentTime+i*0.18;
+      o.type='sawtooth'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.13,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+      o.connect(g); g.connect(masterGain); o.start(t); o.stop(t+0.33);
+    });
+  }
+}
+
+let flickTimer = null;
+function startFlicker() {
+  function doFlick() {
+    const dur = 80 + Math.random()*300;
+    const steps = Math.max(2, Math.floor(dur/80));
+    let i = 0;
+    const iv = setInterval(()=>{
+      document.body.style.filter = i%2===0 ? 'brightness(1.1)' : 'brightness(0.9)';
+      i++;
+      if (i>=steps*2) {
+        clearInterval(iv);
+        document.body.style.filter = '';
+        flickTimer = setTimeout(doFlick, 6000+Math.random()*16000);
+      }
+    }, 80);
+  }
+  flickTimer = setTimeout(doFlick, 4000+Math.random()*8000);
+}
+
+let state = {};
+
+function resetState() {
+  state = {
+    screen: 'home',
+    diff: 'medium',
+    questions: [],
+    idx: 0,
+    score: 0,
+    streak: 0,
+    maxStreak: 0,
+    startTime: 0,
+    answered: [],
+    timerActive: false,
+    timerRemaining: 0,
+  };
+}
+resetState();
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(CFG.LS_KEY)) || {hall:[]}; }
+  catch { return {hall:[]}; }
+}
+function saveEntry(entry) {
+  const d = loadData();
+  d.hall = d.hall || [];
+  d.hall.push(entry);
+  d.hall.sort((a,b)=>b.score-a.score || a.time-b.time);
+  d.hall = d.hall.slice(0, CFG.MAX_HALL);
+  try { localStorage.setItem(CFG.LS_KEY, JSON.stringify(d)); } catch{}
+  return d.hall[0]===entry;
+}
+function getHall() { return loadData().hall || []; }
+function clearHall() {
+  const d = loadData(); d.hall=[];
+  try { localStorage.setItem(CFG.LS_KEY, JSON.stringify(d)); } catch{}
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const sc = document.getElementById(id);
+  if (sc) { sc.classList.add('active'); window.scrollTo(0,0); }
+  state.screen = id;
+  const inGame = id==='game';
+  document.getElementById('hud').classList.toggle('show', inGame);
+  if (!inGame) document.getElementById('topbar').style.width='0%';
+}
+
+function toast(msg, type='inf', ms=2600) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(), 280); }, ms);
+}
+
+let timerInterval = null;
+const CIRC = 138.2;
+
+function startTimer(secs, onExpire) {
+  clearInterval(timerInterval);
+  if (secs===0) {
+    document.getElementById('ringText').textContent='∞';
+    document.getElementById('ringFill').style.strokeDashoffset='0';
+    document.getElementById('ringFill').classList.remove('crit');
+    state.timerActive = false;
+    return;
+  }
+  state.timerRemaining = secs;
+  state.timerActive = true;
+  updateRing(secs, secs);
+  timerInterval = setInterval(()=>{
+    state.timerRemaining--;
+    updateRing(state.timerRemaining, secs);
+    if (state.timerRemaining<=0) { clearInterval(timerInterval); state.timerActive=false; onExpire(); }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  state.timerActive = false;
+}
+
+function updateRing(rem, total) {
+  const pct = total>0 ? rem/total : 1;
+  const offset = CIRC*(1-pct);
+  const fill = document.getElementById('ringFill');
+  const txt  = document.getElementById('ringText');
+  if (fill) { fill.style.strokeDashoffset=offset; fill.classList.toggle('crit', rem<=10&&total>0); }
+  if (txt)  { txt.textContent=rem; txt.style.color=rem<=10&&total>0?'var(--red)':''; }
+}
+
+function shuffle(arr) {
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function buildQuestions() {
+  const all=[];
+  ROOMS.forEach(r=>r.qs.forEach(q=>all.push({...q,roomId:r.id,roomName:r.name,roomIcon:r.icon,roomAmb:r.amb})));
+  return shuffle(all).slice(0, CFG.TOTAL);
+}
+
+function startGame() {
+  const chosenDiff = document.querySelector('.diff-btn.sel')?.dataset.diff || 'medium';
+  resetState();
+  state.diff = chosenDiff;
+  state.questions = buildQuestions();
+  state.startTime = Date.now();
+  showScreen('game');
+  playAmb(state.questions[0]?.roomAmb || 'hum');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = state.questions[state.idx];
+  if (!q) { endGame(); return; }
+
+  document.getElementById('roomName').textContent = `${q.roomIcon} ${q.roomName}`;
+
+  const pipsEl = document.getElementById('pips');
+  pipsEl.innerHTML='';
+  state.questions.forEach((_,i)=>{
+    const p=document.createElement('div');
+    p.className='pip';
+    if(i<state.idx) p.classList.add(state.answered[i]==='ok'?'ok':'bad');
+    else if(i===state.idx) p.classList.add('cur');
+    pipsEl.appendChild(p);
+  });
+
+  document.getElementById('qNum').textContent=`Pergunta ${state.idx+1} de ${state.questions.length}`;
+  document.getElementById('qText').textContent=q.t;
+
+  const optsEl = document.getElementById('opts');
+  optsEl.innerHTML='';
+  const letters=['A','B','C','D'];
+  q.o.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.innerHTML=`<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => answer(i);
+    optsEl.appendChild(btn);
+  });
+
+  const fbEl=document.getElementById('fb');
+  fbEl.className='feedback'; fbEl.textContent='';
+
+  document.getElementById('hScore').textContent=state.score;
+  document.getElementById('hQ').textContent=`${state.idx+1}/${state.questions.length}`;
+  document.getElementById('hStreak').textContent=state.streak;
+
+  document.getElementById('topbar').style.width=(state.idx/state.questions.length*100)+'%';
+
+  const diffTime = CFG.DIFFS[state.diff]?.time||0;
+  startTimer(diffTime, timeUp);
+}
+
+function answer(chosen) {
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  stopTimer();
+
+  const q = state.questions[state.idx];
+  const ok = chosen===q.a;
+
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    if(i===q.a) b.classList.add('correct');
+    if(i===chosen&&!ok) b.classList.add('wrong');
+  });
+
+  if(ok) {
+    const diffTime=CFG.DIFFS[state.diff]?.time||0;
+    let pts=100;
+    if(diffTime>0) pts+=Math.floor(state.timerRemaining*2);
+    state.streak++;
+    state.maxStreak=Math.max(state.maxStreak,state.streak);
+    state.score+=pts;
+    state.answered.push('ok');
+    sfx('ok');
+    showFeedback(true, `${q.e} (+${pts}pts)`);
+    if(state.streak===3) toast('🔥 Sequência de 3!','ok');
+    if(state.streak===5) toast('🔥🔥 Sequência de 5!','ok');
+  } else {
+    state.streak=0;
+    state.answered.push('err');
+    sfx('err');
+    showFeedback(false, `Correto: ${q.o[q.a]}`);
+  }
+
+  document.getElementById('hScore').textContent=state.score;
+  document.getElementById('hStreak').textContent=state.streak;
+
+  setTimeout(next, 2000);
+}
+
+function timeUp() {
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===state.questions[state.idx].a) b.classList.add('correct');
+  });
+  state.streak=0;
+  state.answered.push('err');
+  sfx('err');
+  showFeedback(false, `Tempo! Correto: ${state.questions[state.idx].o[state.questions[state.idx].a]}`);
+  setTimeout(next, 2200);
+}
+
+function showFeedback(ok, msg) {
+  const el=document.getElementById('fb');
+  el.className=`feedback show ${ok?'ok':'err'}`;
+  el.innerHTML=`<span>${ok?'✅':'❌'}</span><span>${msg}</span>`;
+}
+
+function next() {
+  state.idx++;
+  if(state.idx>=state.questions.length) endGame();
+  else renderQuestion();
+}
+
+function endGame() {
+  stopTimer(); stopAmb();
+  const totalTime=Math.round((Date.now()-state.startTime)/1000);
+  const certs=state.answered.filter(a=>a==='ok').length;
+  const won=certs>=Math.ceil(state.questions.length*0.5);
+
+  if(won) sfx('win'); else sfx('lose');
+
+  const entry={
+    score:state.score, time:totalTime,
+    correct:certs, total:state.questions.length,
+    diff:state.diff, date:new Date().toLocaleDateString('pt-BR'),
+  };
+  const isRec=saveEntry(entry);
+
+  document.getElementById('resEmoji').textContent = won?'🏆':'💀';
+  document.getElementById('resTitle').textContent = won?'Você Escapou!':'Você Se Perdeu';
+  document.getElementById('resSub').textContent   = won?'Parabéns — você conhece as Backrooms.':'As Backrooms te consumiram desta vez.';
+  document.getElementById('sScore').textContent   = entry.score;
+  document.getElementById('sAcertos').textContent = `${entry.correct}/${entry.total}`;
+  document.getElementById('sTime').textContent    = fmtTime(entry.time);
+  document.getElementById('sDiff').textContent    = CFG.DIFFS[entry.diff]?.icon+' '+CFG.DIFFS[entry.diff]?.label;
+
+  const rec=document.getElementById('recBadge');
+  if(isRec) rec.classList.add('show'); else rec.classList.remove('show');
+
+  document.getElementById('topbar').style.width='100%';
+  showScreen('result');
+}
+
+function fmtTime(s) {
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+
+function renderHall() {
+  const entries=getHall();
+  const tbody=document.getElementById('hallBody');
+  const empty=document.getElementById('hallEmpty');
+  tbody.innerHTML='';
+  if(!entries.length){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  const rankClass=['gold','silver','bronze'];
+  entries.forEach((e,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="rank ${rankClass[i]||''}">#${i+1}</span></td>
+      <td class="score-td">${e.score}</td>
+      <td>${e.correct}/${e.total}</td>
+      <td>${CFG.DIFFS[e.diff]?.icon||''} ${CFG.DIFFS[e.diff]?.label||'?'}</td>
+      <td>${fmtTime(e.time)}</td>
+      <td>${e.date}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* Interação com botões de Dificuldade */
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    sfx('click');
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('sel'));
+    e.target.classList.add('sel');
+  });
+});
+
+document.getElementById('btnStart').addEventListener('click',()=>{
+  initAudio(); sfx('click'); startGame();
+});
+
+document.getElementById('btnHall').addEventListener('click',()=>{
+  sfx('click'); renderHall(); showScreen('hall');
+});
+
+document.getElementById('btnAgain').addEventListener('click',()=>{
+  sfx('click'); startGame();
+});
+
+document.getElementById('btnResHall').addEventListener('click',()=>{
+  sfx('click'); renderHall(); showScreen('hall');
+});
+
+document.getElementById('btnResHome').addEventListener('click',()=>{
+  sfx('click'); showScreen('home');
+});
+
+document.getElementById('btnHallBack').addEventListener('click',()=>{
+  sfx('click'); showScreen('home');
+});
+
+document.getElementById('btnClear').addEventListener('click',()=>{
+  sfx('click'); document.getElementById('modalClear').classList.add('open');
+});
+
+document.getElementById('btnConfirm').addEventListener('click',()=>{
+  clearHall(); renderHall();
+  document.getElementById('modalClear').classList.remove('open');
+  toast('Hall da Fama limpo.','inf');
+});
+
+document.getElementById('btnCancel').addEventListener('click',()=>{
+  document.getElementById('modalClear').classList.remove('open');
+});
+
+document.getElementById('modalClear').addEventListener('click',e=>{
+  if(e.target===e.currentTarget) e.currentTarget.classList.remove('open');
+});
+
+document.getElementById('soundBtn').addEventListener('click',()=>{
+  initAudio();
+  soundOn=!soundOn;
+  document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';
+  if(!soundOn) stopAmb();
+  else if(state.screen==='game') playAmb(state.questions[state.idx]?.roomAmb||'hum');
+  toast(soundOn?'🔊 Som ativado':'🔇 Som desativado','inf',1400);
+});
+
+document.body.addEventListener('pointerdown',()=>{ initAudio(); },{once:true});
+
+startFlicker();
+showScreen('home');
+console.log('[Backrooms Quiz] Pronto. Boa sorte...');
+</script>
+</body>
+</html>
